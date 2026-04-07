@@ -14,7 +14,9 @@ San José State University
 
 ## Abstract
 
-This project proposes the development of FitSense, a machine learning model designed to predict whether an online clothing item will fit a customer appropriately. The study uses a dataset containing customer attributes such as height, weight, body type, size, age, product category, ratings, and review text. The project begins with Exploratory Data Analysis (EDA) to understand feature distributions and identify patterns influencing product fit. To address potential class imbalance, oversampling techniques such as SMOTE are applied. Multiple classification algorithms including Logistic Regression, Random Forest, Support Vector Machines, and Gradient Boosting are implemented and compared. Model performance is evaluated using k-fold cross-validation and hyperparameter tuning to optimize accuracy and generalization. The goal is to build an effective predictive system that can reduce return rates and improve personalization in online fashion retail.
+Online fashion retail suffers from persistently high return rates, frequently exceeding 30%, driven largely by sizing and fit uncertainty. Without the ability to physically try on garments, customers must rely on inconsistent brand-specific size charts, which leads to dissatisfaction and costly reverse logistics. FitSense proposes a supervised machine learning pipeline to predict whether a clothing item will fit a given customer, using a real-world dataset of online clothing transactions from the UCSD McAuley Lab. The dataset captures customer attributes, including height, weight, age, body type, and cup size, alongside self-reported fit feedback labeled as small, fit, or large, drawn from both the ModCloth and RentTheRunway platforms.
+
+The pipeline begins with Exploratory Data Analysis (EDA) to surface distributional patterns and guide feature engineering. Data preprocessing includes missing value imputation, categorical encoding, and SMOTE-based oversampling to correct class imbalance. Multiple classification algorithms including Logistic Regression, Random Forest, Support Vector Machines, Gradient Boosting, and K-Nearest Neighbors are trained and compared using stratified k-fold cross-validation and hyperparameter tuning. Models are evaluated on accuracy, precision, recall, F1-score, and AUC-ROC, with particular emphasis on performance for the minority small and large classes. The goal of FitSense is a generalizable and interpretable predictive system that reduces fit-driven returns and enhances personalization in e-commerce.
 
 ## Dataset
 
@@ -56,21 +58,25 @@ The dataset includes customer-provided attributes such as:
 
 ### Modeling & Evaluation
 
-- **Model:** Logistic Regression with max_iter=5000
-- **Training:** Train-test split (70-30 ratio) with stratification
+- **Algorithms:** Logistic Regression, Random Forest, Support Vector Machines (SVM), Gradient Boosting, and K-Nearest Neighbors (KNN)
+- **Class Imbalance Handling:** SMOTE (Synthetic Minority Over-sampling Technique) applied within each training fold during cross-validation
+- **Training:** Stratified k-fold cross-validation (typically 5-fold) with hyperparameter tuning
 - **Evaluation Metrics:**
-    - Accuracy score
-    - Classification report (precision, recall, F1-score)
-    - Confusion matrix
-    - Prediction probabilities for confidence assessment
+    - Accuracy, Precision, Recall, F1-score (per class and macro-averaged)
+    - Confusion Matrix
+    - AUC-ROC for multi-class classification
+    - Emphasis on minority class performance (small and large fits)
 
 ## Results
 
-The trained Logistic Regression model provides:
+The trained models are compared across multiple performance metrics using stratified cross-validation. Key findings include:
 
-- Accuracy on test set
-- Per-class performance metrics (precision, recall, F1-score)
-- Prediction confidence scores for model interpretability
+- Model performance rankings based on macro-averaged F1-score and AUC-ROC
+- Detailed per-class metrics highlighting strengths in predicting minority classes after SMOTE
+- Confusion matrices showing prediction patterns for small, fit, and large categories
+- Hyperparameter tuning results and optimal configurations for each algorithm
+
+Ensemble methods (Random Forest, Gradient Boosting) generally outperform baseline Logistic Regression, with Gradient Boosting often achieving the highest overall accuracy and balanced performance across classes.
 
 ## Dependencies
 
@@ -78,6 +84,8 @@ The trained Logistic Regression model provides:
 pandas
 numpy
 scikit-learn
+imbalanced-learn  # For SMOTE oversampling
+xgboost           # For Gradient Boosting
 matplotlib
 seaborn
 google-colab (for Colab environment)
@@ -98,25 +106,31 @@ The project is implemented as a Jupyter Notebook (`CMPE255_FitSense.ipynb`) that
 
 1. **Data Loading** - Load JSON dataset from Google Drive
 2. **Data Exploration** - Visualize target variable and feature distributions
-3. **Data Cleaning** - Handle missing values and remove invalid records
-4. **Feature Preprocessing** - Convert units, encode categories, and scale features
-5. **EDA & Correlation** - Analyze relationships between features and target
-6. **Model Training** - Train Logistic Regression classifier
-7. **Model Evaluation** - Assess performance using multiple metrics
+3. **Data Cleaning** - Handle missing values, remove invalid records, and perform unit conversions
+4. **Feature Preprocessing** - Encode categories, scale features, and engineer domain-specific transformations
+5. **EDA & Correlation** - Analyze relationships between features and target, identify correlations
+6. **Class Balancing** - Apply SMOTE oversampling within cross-validation folds
+7. **Model Training** - Train and tune multiple classifiers (LR, RF, SVM, GB, KNN) using stratified k-fold CV
+8. **Model Evaluation** - Compare performance across metrics, analyze confusion matrices and ROC curves
 
 ## Project Structure
 
 ```
 CMPE_255_FitSense/
-├── CMPE255_FitSense.ipynb    # Main notebook with entire pipeline
-├── README.md                   # Project documentation
+├── CMPE255_FitSense.ipynb    # Main notebook with complete ML pipeline
+├── README.md                 # Project documentation
+├── abstract.md               # Project abstract
+├── literature_survey.md      # Literature review and related work
+├── checkin2_draft.md         # Check-In 2 submission draft (sections 1-11)
 └── renttherunway_final_data.json  # Dataset (in Google Drive)
 ```
 
 ## Key Features
 
-- **Robust Data Pipeline:** Comprehensive preprocessing with proper handling of missing values
-- **Feature Engineering:** Domain-specific transformations (height, weight units, bust size)
-- **Correlation Analysis:** Identifies highly correlated feature pairs for potential multicollinearity
-- **Visualization:** Multiple plots for understanding data distributions and relationships
-- **Scalable Model:** StandardScaler ensures consistent feature scaling for improved model performance
+- **Comprehensive Data Pipeline:** Robust preprocessing with imputation, encoding, scaling, and SMOTE oversampling
+- **Advanced Feature Engineering:** Domain-specific transformations (bust size parsing, unit conversions, categorical encoding)
+- **Extensive EDA:** Correlation analysis, distribution visualizations, and relationship insights
+- **Multi-Model Comparison:** Rigorous evaluation of 5 classification algorithms with cross-validation
+- **Class Imbalance Handling:** SMOTE applied properly within CV folds to prevent data leakage
+- **Hyperparameter Tuning:** Optimized model configurations for best performance
+- **Reproducible Evaluation:** Stratified k-fold CV ensuring reliable generalization metrics
