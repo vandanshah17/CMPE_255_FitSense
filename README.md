@@ -16,7 +16,7 @@ San José State University
 
 Online fashion retail suffers from persistently high return rates, frequently exceeding 30%, driven largely by sizing and fit uncertainty. Without the ability to physically try on garments, customers must rely on inconsistent brand-specific size charts, which leads to dissatisfaction and costly reverse logistics. FitSense proposes a supervised machine learning pipeline to predict whether a clothing item will fit a given customer, using a real-world dataset of online clothing transactions from the UCSD McAuley Lab. The dataset captures customer attributes, including height, weight, age, body type, and cup size, alongside self-reported fit feedback labeled as small, fit, or large, drawn from both the ModCloth and RentTheRunway platforms.
 
-The pipeline begins with Exploratory Data Analysis (EDA) to surface distributional patterns and guide feature engineering. Data preprocessing includes missing value imputation, categorical encoding, and SMOTE-based oversampling to correct class imbalance. Multiple classification algorithms including Logistic Regression, Random Forest, Support Vector Machines, Gradient Boosting, and K-Nearest Neighbors are trained and compared using stratified k-fold cross-validation and hyperparameter tuning. Models are evaluated on accuracy, precision, recall, F1-score, and AUC-ROC, with particular emphasis on performance for the minority small and large classes. The goal of FitSense is a generalizable and interpretable predictive system that reduces fit-driven returns and enhances personalization in e-commerce.
+The pipeline begins with Exploratory Data Analysis (EDA) to surface distributional patterns and guide feature engineering. Data preprocessing includes missing value imputation, categorical encoding, and SMOTE-based oversampling to correct class imbalance. Multiple classification algorithms including Logistic Regression, Random Forest, K-Nearest Neighbors, and planned Support Vector Machines and Gradient Boosting are trained and compared using stratified k-fold cross-validation and hyperparameter tuning. Models are evaluated on accuracy, precision, recall, F1-score, and AUC-ROC, with particular emphasis on performance for the minority small and large classes. The goal of FitSense is a generalizable and interpretable predictive system that reduces fit-driven returns and enhances personalization in e-commerce.
 
 ## Dataset
 
@@ -58,9 +58,13 @@ The dataset includes customer-provided attributes such as:
 
 ### Modeling & Evaluation
 
-- **Algorithms:** Logistic Regression, Random Forest, Support Vector Machines (SVM), Gradient Boosting, and K-Nearest Neighbors (KNN)
+- **Algorithms Implemented:** 
+    - Logistic Regression
+    - Random Forest (with hyperparameter tuning)
+    - K-Nearest Neighbors (KNN) (with hyperparameter tuning)
+    - Planned: Support Vector Machines (SVM), Gradient Boosting
 - **Class Imbalance Handling:** SMOTE (Synthetic Minority Over-sampling Technique) applied within each training fold during cross-validation
-- **Training:** Stratified k-fold cross-validation (typically 5-fold) with hyperparameter tuning
+- **Training:** Stratified k-fold cross-validation (typically 5-fold) with hyperparameter tuning for Random Forest and KNN
 - **Evaluation Metrics:**
     - Accuracy, Precision, Recall, F1-score (per class and macro-averaged)
     - Confusion Matrix
@@ -69,14 +73,21 @@ The dataset includes customer-provided attributes such as:
 
 ## Results
 
-The trained models are compared across multiple performance metrics using stratified cross-validation. Key findings include:
+The trained models are being evaluated across multiple performance metrics using stratified cross-validation. Current implementation status:
 
-- Model performance rankings based on macro-averaged F1-score and AUC-ROC
-- Detailed per-class metrics highlighting strengths in predicting minority classes after SMOTE
-- Confusion matrices showing prediction patterns for small, fit, and large categories
-- Hyperparameter tuning results and optimal configurations for each algorithm
+### Implemented Models:
+- **Logistic Regression** - Baseline model for classification
+- **Random Forest** - Ensemble method with 50 estimators and hyperparameter optimization
+- **K-Nearest Neighbors (KNN)** - Instance-based learning with hyperparameter tuning for optimal k values
 
-Ensemble methods (Random Forest, Gradient Boosting) generally outperform baseline Logistic Regression, with Gradient Boosting often achieving the highest overall accuracy and balanced performance across classes.
+### Evaluation Progress:
+- Detailed per-class metrics highlighting performance across small, fit, and large fit categories
+- Confusion matrices showing prediction patterns for each model
+- Hyperparameter tuning results for Random Forest and KNN
+- Cross-validation performance tracking
+
+### Key Findings (In Progress):
+Ensemble methods like Random Forest are expected to outperform baseline Logistic Regression, with performance comparisons pending. KNN with optimized k values provides instance-based alternatives to parametric models.
 
 ## Dependencies
 
