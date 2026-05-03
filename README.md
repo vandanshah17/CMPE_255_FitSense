@@ -145,3 +145,75 @@ CMPE_255_FitSense/
 - **Class Imbalance Handling:** SMOTE applied properly within CV folds to prevent data leakage
 - **Hyperparameter Tuning:** Optimized model configurations for best performance
 - **Reproducible Evaluation:** Stratified k-fold CV ensuring reliable generalization metrics
+
+## Running the demo
+
+Follow these steps to run FitSense locally. The Docker workflow is the fastest way to get the complete demo running.
+
+### 1) With Docker (recommended)
+
+- From the repository root, build and start the services:
+
+```bash
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+- Services (default ports):
+    - Frontend UI: http://localhost:3000
+    - Backend API: http://localhost:8000 (health at `/health`, prediction at `/api/predict-simple`)
+
+- View logs:
+
+```bash
+docker-compose logs -f backend
+docker-compose logs -f frontend
+```
+
+### 2) Without Docker (local / development)
+
+- Create and activate a Python virtual environment, then install the backend dependencies:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r backend/requirements.txt
+```
+
+- Place your trained model at `backend/model.joblib` (do not commit this file to the repository).
+
+- Run the FastAPI backend:
+
+```bash
+cd backend
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+- Serve the frontend as static files (simple option):
+
+```bash
+cd frontend
+python3 -m http.server 8001
+# then open http://localhost:8001
+```
+
+### 3) Exporting a model from Google Colab
+
+In Colab, save the model to a file and download it:
+
+```python
+import joblib
+joblib.dump(model, '/content/model.joblib')
+# then use the Colab UI to download model.joblib to your machine
+```
+
+Move the downloaded `model.joblib` into the `backend/` folder before starting the backend.
+
+### 4) Preparing for GitHub
+
+- The repo includes a `.gitignore` that excludes `backend/model.joblib` and common virtual environment files. Do not commit large binary model files—only commit code, docs, and configuration.
+
+### Troubleshooting
+
+- Feature-shape mismatch: If the backend raises a shape error, the model expects the same preprocessing and feature order used during training. Reproduce the notebook preprocessing in `backend/app.py`, or export and serve a pipeline that includes preprocessing steps.
+

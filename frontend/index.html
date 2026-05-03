@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>FitSense - Clothing Fit Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://kit.fontawesome.com/a2d9b8e6f0.js" crossorigin="anonymous"></script>
+    <style>
+      :root{--bg1:#0f172a;--card:#0b1220;--accent1:#7c5cff;--accent2:#50d1ff;--muted:#9aa4b2}
+      *{box-sizing:border-box;margin:0;padding:0}
+      html,body,#root{height:100%}
+      body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial; background: radial-gradient(1200px 600px at 10% 10%, rgba(124,92,255,0.15), transparent), radial-gradient(900px 400px at 90% 90%, rgba(80,209,255,0.08), transparent), linear-gradient(180deg,#07113a,#0b1220); color:#e6eef8; -webkit-font-smoothing:antialiased; padding:36px}
+      .wrap{max-width:980px;margin:0 auto;display:grid;grid-template-columns:420px 1fr;gap:28px;align-items:start}
+      .card{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));border-radius:14px;padding:22px;box-shadow:0 8px 30px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.04)}
+      .brand{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+      .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#07113a;font-size:20px}
+      h1{font-size:20px;color:#e8f0ff}
+      .subtitle{color:var(--muted);font-size:13px;margin-bottom:16px}
+
+      .controls .group{margin-bottom:14px}
+      label{display:block;color:#cbd7ee;font-size:13px;margin-bottom:8px}
+      input[type=number], select{width:100%;padding:10px 12px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:#e6eef8}
+      input::placeholder{color:#7f8ba0}
+      .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+      .btn-primary{display:inline-flex;align-items:center;gap:8px;padding:11px 14px;border-radius:10px;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#07113a;border:none;font-weight:700;cursor:pointer}
+      .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:#dbe9ff;padding:8px 10px;border-radius:8px;cursor:pointer}
+
+      .samples{display:flex;gap:8px;flex-wrap:wrap}
+      .chip{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);cursor:pointer;color:#dbe9ff;font-weight:600}
+      .chip.small{background:linear-gradient(90deg,#ff7a7a,#ffb199);color:#081028}
+      .chip.fit{background:linear-gradient(90deg,#67d76b,#2ebf7a);color:#061008}
+      .chip.large{background:linear-gradient(90deg,#ffb14d,#ff7a00);color:#081000}
+
+      .right-panel{display:flex;flex-direction:column;gap:16px}
+      .result-large{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:20px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03)}
+      .prediction-badge{font-weight:800;padding:14px 18px;border-radius:12px;background:linear-gradient(90deg,#ffffff11,#ffffff08);color:#fff;font-size:20px}
+      .prob-bar{height:12px;border-radius:8px;background:#0b1220;overflow:hidden;border:1px solid rgba(255,255,255,0.02)}
+      .prob-fill{height:100%;background:linear-gradient(90deg,var(--accent1),var(--accent2));}
+      .prob-row{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:8px}
+      .muted{color:var(--muted);font-size:13px}
+
+      @media (max-width:900px){.wrap{grid-template-columns:1fr;padding:0}.card{padding:16px}}
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      const e = React.createElement;
+      const useState = React.useState;
+
+      const CATEGORIES = {
+        body_type: ['Apple','Athletic','Bell','Curvy','Hourglass','Inverted Triangle','Pear','Rectangle','Triangle'],
+        product_category: ['All Dressed Up','Casual Dress','Cocktail & Party','Coverups','Denim','Gowns','Knit','Shirt'],
+        rented_for: ['Bride','Bridesmaid','Casual Event','Cocktail','Concert','Dinner Date','Graduation','Holiday','Honeymoon','Wedding Guest','Work Event','uncommon']
+      };
+
+      function App(){
+        const [height,setHeight] = useState('65');
+        const [weight,setWeight] = useState('65');
+        const [age,setAge] = useState('28');
+        const [productSize,setProductSize] = useState('6');
+        const [reviewRating,setReviewRating] = useState('0');
+        const [bodyType,setBodyType] = useState('Rectangle');
+        const [productCategory,setProductCategory] = useState('Casual Dress');
+        const [rentedFor,setRentedFor] = useState('Casual Event');
+        const [result,setResult] = useState(null);
+        const [error,setError] = useState(null);
+        const [loading,setLoading] = useState(false);
+
+        const exampleProfiles = [
+          {name:'Small',height:72,weight:120,age:45,product_size:16,review_rating:1,body_type:'Pear',product_category:'Gowns',rented_for:'Wedding Guest'},
+          {name:'Fit',height:65,weight:65,age:28,product_size:6,review_rating:0,body_type:'Rectangle',product_category:'Casual Dress',rented_for:'Casual Event'},
+          {name:'Large',height:62,weight:90,age:31,product_size:10,review_rating:3,body_type:'Hourglass',product_category:'Cocktail & Party',rented_for:'Cocktail'}
+        ];
+
+        const loadExample = (p)=>{setHeight(String(p.height));setWeight(String(p.weight));setAge(String(p.age));setProductSize(String(p.product_size));setReviewRating(String(p.review_rating));setBodyType(p.body_type);setProductCategory(p.product_category);setRentedFor(p.rented_for);setResult(null);setError(null)};
+
+        const predict = async ()=>{
+          setError(null);setResult(null);setLoading(true);
+          try{
+            const h = parseFloat(height); const w = parseFloat(weight); const a = parseFloat(age); const ps = parseFloat(productSize); const rr = parseFloat(reviewRating);
+            if(!h||!w||!a||!ps||Number.isNaN(rr)) throw new Error('Please complete all numeric fields');
+            const resp = await fetch('/api/predict-simple',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({height:h,weight:w,age:a,product_size:ps,review_rating:rr,body_type:bodyType,product_category:productCategory,rented_for:rentedFor})});
+            if(!resp.ok){const d = await resp.json(); throw new Error(d.detail||`HTTP ${resp.status}`)}
+            const data = await resp.json(); setResult(data);
+          }catch(err){setError(err.message)}finally{setLoading(false)}
+        };
+
+        const labelFor = (pred)=>{const labels={'-1':'SMALL','0':'FIT','1':'LARGE'};return labels[pred[0]]||pred[0]};
+
+        return e('div',{className:'wrap'},
+          e('div',{className:'card controls'},
+            e('div',{className:'brand'},e('div',{className:'logo'},'FS'),e('div',null,e('h1',null,'FitSense'),e('div',{className:'subtitle'},'Predict clothing fit'))),
+
+            e('div',{className:'group'},e('label',null,'Try a sample profile'),e('div',{className:'samples'},
+              exampleProfiles.map(p=>e('div',{key:p.name,onClick:()=>loadExample(p),className:`chip ${p.name==='Small'?'small':p.name==='Fit'?'fit':'large'}`},p.name))
+            )),
+
+            e('div',{className:'group'},e('label',null,'Height (inches)'),e('input',{type:'number',value:height,onChange:ev=>setHeight(ev.target.value),placeholder:'65'})),
+            e('div',{className:'group'},e('label',null,'Weight (kg)'),e('input',{type:'number',value:weight,onChange:ev=>setWeight(ev.target.value),placeholder:'65'})),
+            e('div',{className:'row'},e('div',{className:'group'},e('label',null,'Age'),e('input',{type:'number',value:age,onChange:ev=>setAge(ev.target.value),placeholder:'28'})),e('div',{className:'group'},e('label',null,'Product Size'),e('input',{type:'number',step:'0.5',value:productSize,onChange:ev=>setProductSize(ev.target.value),placeholder:'6'}))),
+            e('div',{className:'group'},e('label',null,'Review Rating'),e('input',{type:'number',min:'0',max:'5',step:'1',value:reviewRating,onChange:ev=>setReviewRating(ev.target.value),placeholder:'0'})),
+
+            e('div',{className:'row'},e('div',{className:'group'},e('label',null,'Body Type'),e('select',{value:bodyType,onChange:ev=>setBodyType(ev.target.value)},CATEGORIES.body_type.map(bt=>e('option',{key:bt,value:bt},bt)))),e('div',{className:'group'},e('label',null,'Product Category'),e('select',{value:productCategory,onChange:ev=>setProductCategory(ev.target.value)},CATEGORIES.product_category.map(pc=>e('option',{key:pc,value:pc},pc))))),
+
+            e('div',{className:'group'},e('label',null,'Rented For'),e('select',{value:rentedFor,onChange:ev=>setRentedFor(ev.target.value)},CATEGORIES.rented_for.map(rf=>e('option',{key:rf,value:rf},rf)))),
+
+            e('div',null,e('button',{className:'btn-primary',onClick:predict,disabled:loading},loading?e('span',null,'Predicting...'):e('span',null,'Predict Fit'))),
+
+            error && e('div',{style:{marginTop:12,color:'#ffb4b4',background:'#2a0b0b',padding:10,borderRadius:8}},'❌ '+error),
+            e('div',{style:{marginTop:12,color:'#bcdffb',fontSize:13}},'Tip: Use the sample chips to load profiles quickly.')
+          ),
+
+          e('div',{className:'right-panel'},
+            e('div',{className:'card result-large'},
+              e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',width:'100%'}},
+                e('div',null,e('div',{className:'muted'},'Latest Prediction'),e('div',{style:{marginTop:8,display:'flex',gap:12,alignItems:'center'}},
+                  e('div',{className:'prediction-badge'}, result?labelFor(result.prediction):'—'),
+                  e('div',null,e('div',{className:'muted'},'Model confidence'), e('div',{style:{fontSize:12,color:'#9fbbe6'}}, result?new Date().toLocaleTimeString():'No prediction yet'))
+                ))
+              ),
+
+              result && result.probabilities && e('div',null,
+                ['Small','Fit','Large'].map((k,i)=>
+                  e('div',{key:k,style:{marginTop:10}},
+                    e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},e('div',null,k),e('div',null, (result.probabilities[0][i]*100).toFixed(1)+'%')),
+                    e('div',{className:'prob-bar',style:{marginTop:8}}, e('div',{className:'prob-fill',style:{width: (result.probabilities[0][i]*100)+'%'}}))
+                  )
+                )
+              ),
+
+              !result && e('div',{className:'muted',style:{marginTop:12}},'No prediction yet — enter values and click Predict Fit.')
+            ),
+
+            e('div',{className:'card',style:{padding:18}},e('h3',null,'About'),e('p',{className:'muted',style:{marginTop:8}},'FitSense uses a pre-trained model to estimate clothing fit (Small/Fit/Large). This UI is a lightweight demo.'))
+          )
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+    </script>
+  </body>
+</html>
